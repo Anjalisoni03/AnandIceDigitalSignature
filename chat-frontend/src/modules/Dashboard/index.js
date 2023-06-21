@@ -4,6 +4,7 @@ import { io } from "socket.io-client";
 import { useNavigate } from "react-router-dom";
 import Logout from "../../components/dropDown";
 import Header from "../../components/header";
+import RecentChat from "../recentChat";
 
 const Dashboard = () => {
   const user = JSON.parse(localStorage.getItem("user:detail"));
@@ -84,7 +85,7 @@ const Dashboard = () => {
       }
     );
     const resData = await res.json();
-    console.log(resData,"resData of message");
+    console.log(resData, "resData of message");
     setMessages({ messages: resData, receiver, conversationId });
   };
 
@@ -109,7 +110,7 @@ const Dashboard = () => {
       },
       body: JSON.stringify(data),
     });
-    // window.location.reload();
+    window.location.reload();
   };
 
   const logoutHandler = () => {
@@ -133,47 +134,18 @@ const Dashboard = () => {
           <Logout logoutHandler={logoutHandler} />
         </div>
         <hr />
-        <div className="m-4">
-          <div className="text-primary text-lg">Chats</div>
-          <div>
-            {users.length > 0 ? (
-              users.map(({ user }) => {
-                const { email, fullName } = user;
-                return (
-                  <div
-                    key={email}
-                    className="flex items-center py-2 border-b border-b-gray-300"
-                  >
-                    <div
-                      className="cursor-pointer flex items-center"
-                      onClick={() => fetchMessages("new", user)}
-                    >
-                      <div>
-                        <img
-                          src="https://th.bing.com/th/id/OIP._BXCcqxwmsduYNCJj2XDtgHaHa?pid=ImgDet&rs=1"
-                          alt="profile"
-                          className="w-[48px] h-[48px] rounded-full p-[2px]"
-                        />
-                      </div>
-                      <div className="ml-6">
-                        <h3 className="text-lg font-semibold capitalize">
-                          {fullName}
-                        </h3>
-                        <p className="text-sm font-light text-gray-600">
-                          {email}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })
-            ) : (
-              <div className="text-center text-lg font-semibold mt-24">
-                No Conversations
-              </div>
-            )}
-          </div>
-        </div>
+        <RecentChat
+          text={"Recent chats"}
+          data={conversations}
+          fetchMessages={fetchMessages}
+          activeUser={messages?.receiver?.email}
+        />
+
+        <RecentChat
+          text={"People"}
+          data={users}
+          fetchMessages={fetchMessages}
+        />
       </div>
       <div className="w-[75%] h-screen bg-white flex flex-col items-center">
         {messages?.receiver?.fullName && (
@@ -306,7 +278,7 @@ const Dashboard = () => {
             <div className={`ml-4 p-2 cursor-pointer bg-light rounded-full `}>
               <div class="image-upload">
                 <label for="file-input">
-                  <img src="/icons/plus.svg" />
+                  <img src="/icons/plus.svg" alt="plus" />
                 </label>
                 <input
                   id="file-input"
