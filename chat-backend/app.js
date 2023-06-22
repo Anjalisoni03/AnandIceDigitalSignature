@@ -211,8 +211,7 @@ app.post("/api/message", async (req, res) => {
     if (!senderId || !message)
       return res.status(400).send("Please fill all required fields");
     if (conversationId === "new" && receiverId) {
-
-      const conversationIdExists= await Conversations.find()
+      // const conversationIdExists= await Conversations.find()
 
       const newCoversation = new Conversations({
         members: [senderId, receiverId],
@@ -229,7 +228,12 @@ app.post("/api/message", async (req, res) => {
     } else if (!conversationId && !receiverId) {
       return res.status(400).send("Please fill all required fields");
     }
-    const newMessage = new Messages({ conversationId, senderId, message });
+    const newMessage = new Messages({
+      conversationId,
+      senderId,
+      message,
+      messageType,
+    });
     await newMessage.save();
     res.status(200).send("Message sent successfully");
   } catch (error) {
@@ -249,6 +253,7 @@ app.get("/api/message/:conversationId", async (req, res) => {
           return {
             user: { id: user._id, email: user.email, fullName: user.fullName },
             message: message.message,
+            messageType: message.messageType,
           };
         })
       );

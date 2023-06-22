@@ -39,8 +39,8 @@ const RecentChat = ({ text, data, fetchMessages, activeUser }) => {
           );
         })
       ) : (
-        <div className="text-center text-lg font-semibold mt-24">
-          No Conversations
+        <div className="text-center text-lg font-normal lowercase">
+          No {text}
         </div>
       )}
     </div>

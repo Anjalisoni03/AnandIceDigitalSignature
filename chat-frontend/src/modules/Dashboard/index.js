@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import Logout from "../../components/dropDown";
 import Header from "../../components/header";
 import RecentChat from "../recentChat";
+import FileMessage from "../../components/fileMessage";
 
 const Dashboard = () => {
   const user = JSON.parse(localStorage.getItem("user:detail"));
@@ -85,7 +86,7 @@ const Dashboard = () => {
       }
     );
     const resData = await res.json();
-    console.log(resData, "resData of message");
+    // console.log(resData, "resData of message");
     setMessages({ messages: resData, receiver, conversationId });
   };
 
@@ -95,7 +96,7 @@ const Dashboard = () => {
     const data = {
       senderId: id,
       receiverId: messages?.receiver?.receiverId,
-      message,
+      message: message || selectedImage?.name,
       messageType,
       conversationId: messages?.conversationId,
     };
@@ -120,15 +121,15 @@ const Dashboard = () => {
 
   console.log(messages, "messages");
 
-  // useEffect(() => {
-  //   if (selectedImage) {
-  //     sendMessage({ messageType: "file" });
-  //   }
-  // }, [selectedImage]);
+  useEffect(() => {
+    if (selectedImage) {
+      sendMessage({ messageType: "file" });
+    }
+  }, [selectedImage]);
 
   return (
     <div className="w-screen flex">
-      <div className="w-[25%] h-screen bg-secondary overflow-scroll">
+      <div className="md:w-[25%] h-screen bg-secondary overflow-scroll">
         <div className="flex items-center my-4 justify-around ">
           <Header {...{ fullName, email }} />
           <Logout logoutHandler={logoutHandler} />
@@ -140,7 +141,6 @@ const Dashboard = () => {
           fetchMessages={fetchMessages}
           activeUser={messages?.receiver?.email}
         />
-
         <RecentChat
           text={"People"}
           data={users}
@@ -166,23 +166,7 @@ const Dashboard = () => {
               </p>
             </div>
             <div className="cursor-pointer">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="icon icon-tabler icon-tabler-phone-outgoing"
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                strokeWidth="1.5"
-                stroke="black"
-                fill="none"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                <path d="M5 4h4l2 5l-2.5 1.5a11 11 0 0 0 5 5l1.5 -2.5l5 2v4a2 2 0 0 1 -2 2a16 16 0 0 1 -15 -15a2 2 0 0 1 2 -2" />
-                <line x1="15" y1="9" x2="20" y2="4" />
-                <polyline points="16 4 20 4 20 8" />
-              </svg>
+              <img src="icons/call.svg" alt="call"></img>
             </div>
           </div>
         )}
@@ -194,51 +178,50 @@ const Dashboard = () => {
           <div className="p-14">
             {messages?.messages?.length > 0 ? (
               <>
-                {/* {console.log(messages, "messages")} */}
                 {messages.messages.map(
-                  ({ message, user: { id } = {} }, index) => {
+                  ({ message, messageType, user: { id } = {} }, index) => {
+                    const isActive = id === user?.id;
                     return (
                       <div key={index}>
-                        <div
-                          className={`max-w-[70%] w-fit rounded-b-xl p-4 mb-6 ${
-                            id === user?.id
-                              ? "bg-primary text-white rounded-tl-xl ml-auto"
-                              : "bg-secondary rounded-tr-xl"
-                          } `}
-                        >
-                          {message}
-                        </div>
-                        <div ref={messageRef}></div>
+                        {messageType === "text" ? (
+                          <>
+                            <div
+                              className={`max-w-[70%] w-fit rounded-b-xl p-4 mb-2 ${
+                                isActive
+                                  ? "bg-primary text-white rounded-tl-xl ml-auto"
+                                  : "bg-secondary rounded-tr-xl"
+                              } `}
+                            >
+                              {message}
+                            </div>
+                            <div ref={messageRef}></div>
+                          </>
+                        ) : (
+                          <FileMessage {...{ message, isActive }} />
+                        )}
                       </div>
                     );
                   }
                 )}
-                {selectedImage && (
-                  <div
-                    className={`box-content font-normal w-48 p-4 border-4 flex bg-primary text-white rounded-tl-xl ml-auto `}
-                  >
-                    <img
-                      src={"/icons/pdf.svg"}
-                      alt="Your SVG"
-                      className="h-10"
-                    />
-                    <div className="m-auto"> {selectedImage?.name}</div>
-                  </div>
-                )}
+                {selectedImage && <FileMessage message={selectedImage?.name} />}
               </>
             ) : (
               <>
-                <Header width={90} height={90} fullName={fullName} />
-                <div className="text-lg font-semibold grid justify-center">
-                  <img
-                    src="/images/InkedchatImage.jpg"
-                    alt="start chat"
-                    className="w-96 h-96"
-                  ></img>
-                  <div className="justify-center flex">
-                    Share and verify documents
-                  </div>
-                </div>
+                {!messages?.receiver?.fullName && (
+                  <>
+                    <Header width={90} height={90} fullName={fullName} />
+                    <div className="text-lg font-semibold grid justify-center">
+                      <img
+                        src="/images/InkedchatImage.jpg"
+                        alt="start chat"
+                        className="w-96 h-96"
+                      ></img>
+                      <div className="justify-center flex">
+                        Share and verify documents
+                      </div>
+                    </div>
+                  </>
+                )}
               </>
             )}
           </div>
@@ -258,27 +241,16 @@ const Dashboard = () => {
               }`}
               onClick={() => sendMessage({ messageType: "text" })}
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="icon icon-tabler icon-tabler-send"
-                width="30"
-                height="30"
-                viewBox="0 0 24 24"
-                strokeWidth="1.5"
-                stroke="#2c3e50"
-                fill="none"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                <line x1="10" y1="14" x2="21" y2="3" />
-                <path d="M21 3l-6.5 18a0.55 .55 0 0 1 -1 0l-3.5 -7l-7 -3.5a0.55 .55 0 0 1 0 -1l18 -6.5" />
-              </svg>
+              <img src="/icons/send.svg" alt="send" />
             </div>
-            <div className={`ml-4 p-2 cursor-pointer bg-light rounded-full `}>
+            <div className="ml-4 p-2 cursor-pointer bg-light rounded-full">
               <div class="image-upload">
-                <label for="file-input">
-                  <img src="/icons/plus.svg" alt="plus" />
+                <label htmlFor="file-input">
+                  <img
+                    src="/icons/plus.svg"
+                    alt="plus"
+                    className="cursor-pointer"
+                  />
                 </label>
                 <input
                   id="file-input"
